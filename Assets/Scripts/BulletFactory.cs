@@ -17,6 +17,8 @@ public class BulletFactory : MonoBehaviour
     float _ShootSpeed = 1.0f;
     [SerializeField]
     float _MaxArrowLength = 2f;
+    [SerializeField]
+    float _MaxShootPower = 8f;
 
     Vector2 ClickPoint;
     Vector2 ReleasePoint;
@@ -41,7 +43,7 @@ public class BulletFactory : MonoBehaviour
         if (MakeArrow)
         {
             MakeArrow.transform.position = (Vector3.down * 2);
-            
+
             Vector3 PullPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Distance = ClickPoint - (Vector2)PullPoint;
             if (ClickPoint != (Vector2)PullPoint)
@@ -51,13 +53,9 @@ public class BulletFactory : MonoBehaviour
                 MakeArrow.transform.rotation = Quaternion.Euler(euler);
             }
 
-            float ArrowLength = Distance.magnitude;
-            if (ArrowLength > _MaxArrowLength)
-            {
-                ArrowLength = _MaxArrowLength;
-            }
 
-            MakeArrow.transform.localScale = new Vector2(1,ArrowLength);
+            float ArrowLength = Mathf.Clamp(Distance.magnitude, 0.0f, _MaxArrowLength);
+            MakeArrow.transform.localScale = new Vector2(1, ArrowLength);
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -68,8 +66,12 @@ public class BulletFactory : MonoBehaviour
             ReleasePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
             Vector2 Force = ClickPoint - ReleasePoint;
+            float Power = Mathf.Clamp(Force.magnitude * _ShootSpeed, 0, _MaxShootPower);
+            Vector2 Direction = Force.normalized;
 
-            MakeBullet.GetComponent<Rigidbody2D>().AddForce(Force * _ShootSpeed, ForceMode2D.Impulse);
+
+            Debug.Log((Direction * Power) + " mag = " + Power);
+            MakeBullet.GetComponent<Rigidbody2D>().AddForce(Direction * Power, ForceMode2D.Impulse);
         }
     }
 }
